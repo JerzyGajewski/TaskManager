@@ -1,100 +1,150 @@
 package TaskManager;
 
-import java.io.FileWriter;
+
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class TaskManager {
+    static String[][] datas;
 
     public static void main(String[] args) {
-
-        homeMenu();
+        datas = loadFileToApp("tasks.csv");
+        Menu();
     }
 
 
-    public static void homeMenu() {
-        String[][] arr = fileReader();
-
-        Scanner scanner = new Scanner(System.in);
+    public static void Menu() {
+        Scanner scann = new Scanner(System.in);
         options();
-        while (scanner.hasNextLine()) {
-            String userChoice = scanner.nextLine();
-            switch (userChoice.toLowerCase()) {
+        while (scann.hasNextLine()) {
+            String choise = scann.nextLine();
+            switch (choise.toLowerCase()) {
                 case "add":
-                    arr = getStrings(arr, scanner);
+                    datas = Arrays.copyOf(datas, datas.length + 1);
+                    datas[datas.length - 1] = task();
                     break;
                 case "remove":
+                    removeTask(datas);
                     break;
                 case "list":
-                    arr = Arrays.copyOf(arr, arr.length);
-                    fileReader();
+                    for (int i = 0; i < datas.length; i++) {
+                        System.out.print(i + ". ");
+                        for (int j = 0; j < datas[i].length; j++) {
+                            System.out.print(datas[i][j] + " ");
+                        }
+                        System.out.println();
+                    }
                     break;
                 case "exit":
-                    System.out.println("Good bye");
+                    saveDatasToFile(datas, "tasks.csv");
+                    System.out.println(ConsoleColors.CYAN_BOLD + "Good bye");
+                    System.out.println(ConsoleColors.RESET);
                     System.exit(0);
                     break;
                 default:
-                    System.out.println("wrong comment, try again");
-
+                    System.out.println(ConsoleColors.RED + "Wrong commend, try again");
+                    System.out.print(ConsoleColors.RESET);
             }
             options();
         }
+
     }
 
-    private static String[][] fileReader() {
-        String[][] arr = new String[0][0];
+    public static String[][] loadFileToApp(String file) {
+        isExist(file);
 
-        Path filePath = Paths.get("tasks.csv");
+        String[][] fileBody = null;
+        Path filePath = Paths.get(file);
         try {
+            List<String> tables = Files.readAllLines(filePath);
+            fileBody = new String[tables.size()][tables.get(0).split(",").length];
+            for (int i = 0; i < tables.size(); i++) {
+                String[] counter = tables.get(i).split(",");
+                for (int j = 0; j < counter.length; j++) {
+                    fileBody[i][j] = counter[j];
+                }
 
-            for (String line : Files.readAllLines(filePath)) {
-                System.out.println(line);
-                String[] row = line.split(",");
-                //todo :: add row to arr variable
             }
         } catch (IOException e) {
             e.printStackTrace();
+
         }
-        return arr;
+        return fileBody;
     }
 
-    private static String[][] getStrings(String[][] arr, Scanner scanner) {
-        System.out.println("dodaj opis zadania: ");
-        String description = scanner.nextLine();
-        System.out.println("dodaj date: ");
-        String date = scanner.nextLine();
-        System.out.println("czy twoje zadanie jest wazne? true/false: ");
-        String importance = scanner.nextLine();
-        String[] task = new String[3];
-        task[0] = description;
-        task[1] = date;
-        task[2] = importance;
-
-        arr = Arrays.copyOf(arr, arr.length + 1);
-        arr[arr.length - 1] = task;
-        FileWriter file = null;
-
-        for (int i = 0; i < arr.length; i++) {
-            for (int j = 0; j < arr[i].length; j++) {
-            String data = arr[i][j];
-
-            }
+    // check if file exists
+    public static void isExist(String file) {
+        Path filePath = Paths.get(file);
+        if (!Files.exists(filePath)) {
+            System.out.println("File not exist");
+            System.exit(0);
         }
-        return arr;
+    }
+
+    public static void saveDatasToFile(String[][] str, String file) {
+        Path filePath = Paths.get(file);
+
+        String[] joinLines = new String[str.length];
+        for (int i = 0; i < str.length; i++) {
+            joinLines[i] = String.join(", ", str[i]);
+        }
+        try {
+            Files.write(filePath, Arrays.asList(joinLines));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String[] task() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Add task description:");
+        String desc = scanner.nextLine();
+        System.out.println("Add date: ");
+        String date = scanner.nextLine();
+        System.out.println("Is task important? true/false");
+        String importance = scanner.nextLine();
+        String[] answers = new String[3];
+        answers[0] = desc;
+        answers[1] = date;
+        answers[2] = importance;
+
+        return answers;
+    }
+
+    public static void removeTask(String[][] data) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Witch line you want to remove: ");
+        while (!scanner.hasNextInt()){
+            System.out.println("This is not a number, try again");
+        System.out.println("Witch line you want to remove: ");
+            scanner.next();
+        }
+        int number = scanner.nextInt();
+
+
+        if (number < data.length) {
+            datas = ArrayUtils.remove(datas, number);
+        } else
+            System.out.println("Element not exist");
     }
 
     private static void options() {
-        System.out.println("Choose option: ");
+        System.out.println(ConsoleColors.YELLOW + "Choose option: ");
+        System.out.print(ConsoleColors.RESET);
         System.out.println("add");
         System.out.println("list");
         System.out.println("remove");
         System.out.println("list");
         System.out.println("exit");
-        System.out.println("Write:");
+        System.out.println(ConsoleColors.PURPLE_BRIGHT + "Write:");
+        System.out.print(ConsoleColors.RESET);
     }
+
 }

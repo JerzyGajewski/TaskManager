@@ -13,24 +13,22 @@ import java.util.Scanner;
 
 public class TaskManager {
     static String[][] datas;
-
+    static String FILE = "tasks.csv";
     public static void main(String[] args) {
-        datas = loadFileToApp("tasks.csv");
+        datas = loadFileToApp(FILE);
         Menu();
     }
 
 
     public static void Menu() {
-        String[][] str = new String[0][];
         Scanner scann = new Scanner(System.in);
         options();
         while (scann.hasNextLine()) {
             String choise = scann.nextLine();
             switch (choise.toLowerCase()) {
                 case "add":
-                    str = Arrays.copyOf(str, str.length + 1);
-                    str[str.length - 1] = task();
-                    datas = str;
+                        datas = Arrays.copyOf(datas, datas.length + 1);
+                        datas[datas.length - 1] = task();
                     break;
                 case "remove":
                     removeTask(datas);
@@ -39,7 +37,7 @@ public class TaskManager {
                     showList();
                     break;
                 case "exit":
-                    saveDatasToFile(datas, "tasks.csv");
+                    saveDatasToFile(datas, FILE);
                     System.out.println(ConsoleColors.CYAN_BOLD + "Good bye");
                     System.out.println(ConsoleColors.RESET);
                     System.exit(0);
@@ -54,7 +52,7 @@ public class TaskManager {
     }
 
     private static void showList() {
-        if (datas != null) {
+        if ( datas.length != 0) {
             for (int i = 0; i < datas.length; i++) {
                 System.out.print(i + ". ");
                 for (int j = 0; j < datas[i].length; j++) {
@@ -69,7 +67,7 @@ public class TaskManager {
     public static String[][] loadFileToApp(String file) {
         isExist(file);
 
-        String[][] fileBody = null;
+        String[][] fileBody = new String[0][];
         Path filePath = Paths.get(file);
         try {
             if (Files.size(filePath) > 0) {
@@ -119,16 +117,24 @@ public class TaskManager {
 
     public static String[] task() {
         Scanner scanner = new Scanner(System.in);
+        String[] answers = new String[3];
         System.out.println("Add task description:");
         String desc = scanner.nextLine();
         System.out.println("Add date: ");
         String date = scanner.nextLine();
         System.out.println("Is task important? true/false");
+        while(true){
         String importance = scanner.nextLine();
-        String[] answers = new String[3];
+            if(importance.toLowerCase().equals("true") || importance.equals("false")){
+        answers[2] = importance;
+                break;
+            }else {
+                System.out.println("Type true or false");
+        System.out.println("Is task important? true/false");
+            }
+        }
         answers[0] = desc;
         answers[1] = date;
-        answers[2] = importance;
 
 
         return answers;
@@ -156,7 +162,6 @@ public class TaskManager {
         System.out.println(ConsoleColors.YELLOW + "Choose option: ");
         System.out.print(ConsoleColors.RESET);
         System.out.println("add");
-        System.out.println("list");
         System.out.println("remove");
         System.out.println("list");
         System.out.println("exit");

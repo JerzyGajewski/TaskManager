@@ -21,26 +21,22 @@ public class TaskManager {
 
 
     public static void Menu() {
+        String[][] str = new String[0][];
         Scanner scann = new Scanner(System.in);
         options();
         while (scann.hasNextLine()) {
             String choise = scann.nextLine();
             switch (choise.toLowerCase()) {
                 case "add":
-                    datas = Arrays.copyOf(datas, datas.length + 1);
-                    datas[datas.length - 1] = task();
+                    str = Arrays.copyOf(str, str.length + 1);
+                    str[str.length - 1] = task();
+                    datas = str;
                     break;
                 case "remove":
                     removeTask(datas);
                     break;
                 case "list":
-                    for (int i = 0; i < datas.length; i++) {
-                        System.out.print(i + ". ");
-                        for (int j = 0; j < datas[i].length; j++) {
-                            System.out.print(datas[i][j] + " ");
-                        }
-                        System.out.println();
-                    }
+                    showList();
                     break;
                 case "exit":
                     saveDatasToFile(datas, "tasks.csv");
@@ -57,24 +53,43 @@ public class TaskManager {
 
     }
 
+    private static void showList() {
+        if (datas != null) {
+            for (int i = 0; i < datas.length; i++) {
+                System.out.print(i + ". ");
+                for (int j = 0; j < datas[i].length; j++) {
+                    System.out.print(datas[i][j] + " ");
+                }
+                System.out.println();
+            }
+        } else
+            System.out.println("Nothing to show");
+    }
+
     public static String[][] loadFileToApp(String file) {
         isExist(file);
 
         String[][] fileBody = null;
         Path filePath = Paths.get(file);
         try {
-            List<String> tables = Files.readAllLines(filePath);
-            fileBody = new String[tables.size()][tables.get(0).split(",").length];
-            for (int i = 0; i < tables.size(); i++) {
-                String[] counter = tables.get(i).split(",");
-                for (int j = 0; j < counter.length; j++) {
-                    fileBody[i][j] = counter[j];
-                }
+            if (Files.size(filePath) > 0) {
+                try {
+                    List<String> tables = Files.readAllLines(filePath);
+                    fileBody = new String[tables.size()][tables.get(0).split(",").length];
+                    for (int i = 0; i < tables.size(); i++) {
+                        String[] counter = tables.get(i).split(",");
+                        for (int j = 0; j < counter.length; j++) {
+                            fileBody[i][j] = counter[j];
+                        }
 
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
-
         }
         return fileBody;
     }
@@ -115,15 +130,16 @@ public class TaskManager {
         answers[1] = date;
         answers[2] = importance;
 
+
         return answers;
     }
 
     public static void removeTask(String[][] data) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Witch line you want to remove: ");
-        while (!scanner.hasNextInt()){
+        while (!scanner.hasNextInt()) {
             System.out.println("This is not a number, try again");
-        System.out.println("Witch line you want to remove: ");
+            System.out.println("Witch line you want to remove: ");
             scanner.next();
         }
         int number = scanner.nextInt();
@@ -131,6 +147,7 @@ public class TaskManager {
 
         if (number < data.length) {
             datas = ArrayUtils.remove(datas, number);
+            System.out.println("Line removed");
         } else
             System.out.println("Element not exist");
     }
